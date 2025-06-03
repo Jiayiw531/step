@@ -1,4 +1,4 @@
-import random, sys, time
+import random, sys, time, hashlib
 
 ###########################################################################
 #                                                                         #
@@ -15,11 +15,8 @@ import random, sys, time
 # Return value: a hash value
 def calculate_hash(key):
     assert type(key) == str
-    # Note: This is not a good hash function. Do you see why?
-    hash = 0
-    for i in key:
-        hash += ord(i)
-    return hash
+    hashed_hex = hashlib.sha256(key.encode('utf-8')).hexdigest()
+    return int(hashed_hex, 16)
 
 
 # An item object that represents one key - value pair in the hash table.
@@ -72,7 +69,24 @@ class HashTable:
         new_item = Item(key, value, self.buckets[bucket_index])
         self.buckets[bucket_index] = new_item
         self.item_count += 1
+        if self.item_count >= self.bucket_size * 0.7: 
+            self.bucket_size *= 2 
+            self.transfer_items(self.buckets)
+        elif self.item_count <= self.bucket_size * 0.3 and self.bucket_size > 97: 
+            self.bucket_size //= 2
+            self.transfer_items(self.buckets)
         return True
+    
+    #def find_next_prime(self, n):
+    
+    def transfer_items(self, buckets): 
+        self.buckets = [None] * self.bucket_size
+        for item in buckets: 
+            while item: 
+                self.put(item.key, item.value)
+                self.item_count -= 1
+                item = item.next
+
 
     # Get an item from the hash table.
     #
@@ -97,10 +111,23 @@ class HashTable:
     #               otherwise.
     def delete(self, key):
         assert type(key) == str
-        #------------------------#
-        # Write your code here!  #
-        #------------------------#
-        pass
+        hash_value = calculate_hash(key) % self.bucket_size
+        item = self.buckets[hash_value]
+        while item: 
+            if item.key == key: 
+                # key is head item
+                self.buckets[hash_value] = item.next
+                self.item_count -= 1
+                return True
+            if item.next:
+                if item.next.key == key: 
+                    # key is not head item, change next pointer value
+                    item.next = item.next.next
+                    self.item_count -= 1
+                    return True
+            item = item.next
+        return False
+
 
     # Return the total number of items in the hash table.
     def size(self):
@@ -205,13 +232,11 @@ def performance_test():
             hash_table.get(str(rand))
         end = time.time()
         print("%d %.6f" % (iteration, end - begin))
-
     for iteration in range(100):
         random.seed(iteration)
         for i in range(10000):
             rand = random.randint(0, 100000000)
             hash_table.delete(str(rand))
-
     assert hash_table.size() == 0
     print("Performance tests passed!")
 
