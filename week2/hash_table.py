@@ -70,14 +70,25 @@ class HashTable:
         self.buckets[bucket_index] = new_item
         self.item_count += 1
         if self.item_count >= self.bucket_size * 0.7: 
-            self.bucket_size *= 2 
+            self.bucket_size = self.find_next_prime(self.bucket_size * 2)
             self.transfer_items(self.buckets)
         elif self.item_count <= self.bucket_size * 0.3 and self.bucket_size > 97: 
-            self.bucket_size //= 2
+            self.bucket_size = self.find_next_prime(self.bucket_size // 2)
             self.transfer_items(self.buckets)
         return True
     
-    #def find_next_prime(self, n):
+    def find_next_prime(self, n):
+        def is_prime(num):
+            if num < 2:
+                return False
+            for i in range(2, int(num**0.5) + 1):
+                if num % i == 0:
+                    return False
+            return True
+
+        while not is_prime(n):
+            n += 1
+        return n
     
     def transfer_items(self, buckets): 
         self.buckets = [None] * self.bucket_size

@@ -22,6 +22,7 @@
 
    - hash tables take up larger space - needs a size larger than data size to assign data entries with their hash value, trees only take up data sized space? 
    - trees allow easier categorizing since the left/right usually follow some sorting rules (thus representing some connections)? while data in hashtable do not really have relationships with their neighbors
+   - since hash tables have the possibility to trigger re-hashing, trees are more stable in performance, especially in worst case scenario
 
    
 
@@ -35,11 +36,10 @@
 
    ###### 	Implementation thoughts: 
 
-   consider linked list? to do the ordering, still utilizing hash table for O(1) lookup
+   Consider using a hash table that maps hash value of URL *hash(URL)* to LinkedListNode item. 
+   LinkedListNode here will have attributes value, prev and next.  
 
-   - pack elements in a class called *Node = (value, prev, next)*, 
-
-   - hash table *table* stores Node, has property *head* and *end*. **search**: find element with hash value. 
+     **search**: find element with hash value. 
 
      **remove**: to remove Node B, assign B.next to B.prev.next, and table[hash(B)] resets to none
 
@@ -62,4 +62,4 @@ challenge questions
 1. is there a data structure that *always* does search-add-delete operations with O(1) complexity? 
 
    to ensure O(1), we need a way to search without iterations, so each item should have a key that helps us find it. 
-
+   If the length of search target is limited, 
