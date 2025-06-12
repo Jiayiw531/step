@@ -15,6 +15,19 @@ def read_number(line, index):
     token = {'type': 'NUMBER', 'number': number}
     return token, index
 
+def read_function(line, index): 
+    function_name = ""
+    name_to_func = {
+        'abs': abs, 
+        'int': int,
+        'round': round,
+    }
+    while index < len(line) and line[index].isalpha():
+        function_name += line[index]
+        index += 1
+    assert(function_name in name_to_func.keys())
+    token = {'type': 'FUNCTION', 'function': name_to_func[function_name]}
+    return token, index
 
 def read_plus(line, index):
     token = {'type': 'PLUS'}
@@ -59,6 +72,11 @@ def tokenize(line):
             (token, index) = read_left_parentheses(line, index)
         elif line[index] == ')':
             (token, index) = read_right_parentheses(line, index)
+        elif line[index].isalpha(): 
+            (token, index) = read_function(line, index)
+        elif line[index].isspace(): 
+            index += 1
+            continue
         else:
             print('Invalid character found: ' + line[index])
             exit(1)
@@ -66,45 +84,55 @@ def tokenize(line):
     return tokens
 
 def has_parentheses(tokens): 
-    for token in tokens: 
-        if token['type'] == 'LEFT' or token['type'] == 'RIGHT': 
-            return True
-    return False
+    return any((token['type'] == 'LEFT' or token['type'] == 'RIGHT') for token in tokens)
+
+def has_functions(tokens): 
+    return any(token['type'] == 'FUNCTION' for token in tokens)
 
 def process_parentheses(tokens):
     index = 1 # starts with 1 since the input tokens has inserted the dummy PLUS sign
     left_index = -1 # stores the innermost left index, updated whenever LEFT is found in traversing
     temp_tokens = [{'type': 'PLUS'}]
-    curr_paren_tokens = []
     while index < len(tokens): 
-        if tokens[index]['type'] == 'LEFT': 
-            # start of a parenthesis pair
-            # case 1: this is the innermost pair, the next parentheses we see is RIGHT
-            # case 2: there are other parentheses inside, we will see another LEFT before we see a RIGHT
+        if tokens[index]['type'] == 'LEFT': # start of a parenthesis pair
             left_index = index
-            temp_tokens.extend(token for token in curr_paren_tokens)
-            curr_paren_tokens = []
         elif tokens[index]['type'] == 'RIGHT': 
             if left_index != -1:  # ensure current parentheses pair is kept track of [avoid triggering (1+2*(3+4))]
-                temp_tokens.append({'type': 'NUMBER', 'number': calculate(curr_paren_tokens)})
+                curr_paren_tokens = tokens[left_index + 1 : index]
+                temp_tokens.append({'type': 'NUMBER', 'number': evaluate(curr_paren_tokens, isInternalCall = True)})
                 left_index = -1
                 index += 1
                 continue
         if left_index == -1: 
             temp_tokens.append(tokens[index])
-        else: 
-            curr_paren_tokens.append(tokens[index])
         index += 1
+    return temp_tokens
+
+def process_functions(tokens): 
+    index = 1
+    temp_tokens = [{'type': 'PLUS'}]
+    while index < len(tokens) - 1: 
+        if tokens[index]['type'] == 'FUNCTION': 
+            assert(tokens[index + 1]['type'] == 'NUMBER') # any calculations including MINUS signs were processed in process_parentheses()
+            answer = tokens[index]['function'](tokens[index + 1]['number']) # apply function to the number following
+            temp_tokens.append({'type': 'NUMBER', 'number': answer})
+            index += 1
+        else: 
+            temp_tokens.append(tokens[index])
+            index += 1
     return temp_tokens
 
 
 #
 # Returns final answer given parsed tokens
 #
-def evaluate(tokens):
-    tokens.insert(0, {'type': 'PLUS'}) # Insert a dummy '+' token
+def evaluate(tokens, isInternalCall = False):
+    if not isInternalCall: # does not insert extra dummy if it was a call from process_parentheses
+        tokens.insert(0, {'type': 'PLUS'}) # Insert a dummy '+' token
     while has_parentheses(tokens):
         tokens = process_parentheses(tokens) # replace parentheses in tokens by their calculation results
+    while has_functions(tokens):
+        tokens = process_functions(tokens)
     return calculate(tokens) # find result after all parentheses were removed
 
 #
@@ -143,7 +171,6 @@ def calculate(tokens):
         index += 1
     return answer
 
-
 def test(line):
     tokens = tokenize(line)
     actual_answer = evaluate(tokens)
@@ -157,11 +184,14 @@ def test(line):
 # Add more tests to this function :)
 def run_test():
     print("==== Test started! ====")
-    test("1+2")
-    test("1.0+2.1-3")
-    test("-12+4-7+.5")
-    test("(1+2*(-4*(-3)+4))")
-    test("(1-3-.4/2+(8-.5))")
+    #test("1+2")
+    #test("1.0+2.1-3")
+    #test("-12+4-7+.5")
+    #test("(1+2*(-4*(-3)+4))")
+    #test("(1-3-.4/2+(8-.5))")
+    #test("round(-1.55)")
+    #test("abs(int(-2.3 + 4))")
+    test("12 + abs(int(round(-1.55) + abs(int(-2.3 + 4))))")
 
     print("==== Test finished! ====\n")
 
