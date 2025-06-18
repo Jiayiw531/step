@@ -17,7 +17,7 @@ class Wikipedia:
         self.links = {}
 
         # Read the pages file into self.titles.
-        with open(pages_file) as file:
+        with open(pages_file, encoding='utf-8') as file:
             for line in file:
                 (id, title) = line.rstrip().split(" ")
                 id = int(id)
@@ -70,15 +70,50 @@ class Wikipedia:
                 print(self.titles[dst], link_count_max)
         print()
 
+    # Find the link to given title. Helper method
+    def find_link(self, title): 
+        for page_id, page_title in self.titles.items(): 
+            if page_title == title: 
+                return page_id
+        return -1
+
 
     # Find the shortest path.
     # |start|: The title of the start page.
     # |goal|: The title of the goal page.
     def find_shortest_path(self, start, goal):
-        #------------------------#
-        # Write your code here!  #
-        #------------------------#
-        pass
+        link_queue = collections.deque()
+        visited = {}
+
+        start_link = self.find_link(start)
+        goal_link = self.find_link(goal)
+        if start_link == -1 or goal_link == -1: 
+            return []
+
+        parent_links = {start_link: None}
+        visited[start_link] = True
+        link_queue.append(start_link)
+
+        while len(link_queue) > 0: 
+            curr_link = link_queue.popleft()
+            if curr_link == goal_link: 
+                path = []
+                while curr_link is not None: 
+                    path.append(self.titles[curr_link])
+                    curr_link = parent_links[curr_link]
+                path.reverse()
+                print("Found shortest path " + str(path))
+                return path
+            
+            for child_link in self.links[curr_link]:
+                if child_link not in visited.keys() or not visited[child_link]:
+                    visited[child_link] = True
+                    parent_links[child_link] = curr_link
+                    link_queue.append(child_link)
+
+        print("No path is found!")
+        return []
+                
 
 
     # Calculate the page ranks and print the most popular pages.
@@ -103,7 +138,7 @@ if __name__ == "__main__":
         exit(1)
 
     wikipedia = Wikipedia(sys.argv[1], sys.argv[2])
-    wikipedia.find_longest_titles()
-    wikipedia.find_most_linked_pages()
+    #wikipedia.find_longest_titles()
+    #wikipedia.find_most_linked_pages()
     wikipedia.find_shortest_path("渋谷", "パレートの法則")
     wikipedia.find_most_popular_pages()
