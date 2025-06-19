@@ -3,6 +3,7 @@ import collections
 import math
 import os
 import pickle
+import random
 
 class Wikipedia:
 
@@ -130,7 +131,26 @@ class Wikipedia:
 
         print("No path is found!")
         return []
-
+    
+    # Finds the top k values in an array given array and k. Helper method
+    def find_top_k(self, arr, k): 
+        if len(arr) <= k: 
+            return arr
+        pivot = random.choice(arr)[1]
+        left, mid, right = [], [], []
+        for page in arr:
+            if page[1] > pivot:
+                left.append(page)
+            elif page[1] == pivot:
+                mid.append(page)
+            else:
+                right.append(page)
+        if len(left) >= k: 
+            return self.find_top_k(left, k)
+        elif len(left) + len(mid) >= k: 
+            return left + mid[: k - len(left)]
+        else: 
+            return left + mid + self.find_top_k(right, k - len(left) - len(mid))
 
     # Calculate the page ranks and print the most popular pages.
     def find_most_popular_pages(self):
@@ -160,8 +180,9 @@ class Wikipedia:
                 new_ranks[page_id] += share_for_all
 
             # 3. Make sure the sum of page ranks is always constant
-            print(sum(new_ranks.values()), sum(pageranks.values()))
-            assert(math.isclose(sum(new_ranks.values()), sum(pageranks.values())))
+            new_rank_sum = sum(new_ranks.values())
+            old_rank_sum = sum(pageranks.values())
+            assert(round(new_rank_sum) == round(old_rank_sum))
 
             # 4. End distribution when difference is negligible
             diff = sum((new_ranks[page_id] - pageranks[page_id])**2 for page_id in self.titles)
@@ -170,9 +191,10 @@ class Wikipedia:
                 break
     
         # 5. Sort pages based on page rank and print top 10
-        sorted_pages = sorted(pageranks.items(), key = lambda x: x[1], reverse=True)
+        top_10 = self.find_top_k(list(pageranks.items()), 10)
+        top_10.sort(key=lambda x: x[1], reverse=True)
         print("\nTop 10 popular pages: ")
-        for page_id, rank in sorted_pages[:10]: 
+        for page_id, rank in top_10: 
             print(f"{self.titles[page_id]}: {rank:.5f}")
 
 
