@@ -100,6 +100,7 @@ class Wikipedia:
     # |start|: The title of the start page.
     # |goal|: The title of the goal page.
     def find_shortest_path(self, start, goal):
+        description = f"From {start} to {goal}, "
         link_queue = collections.deque()
         visited = set()
 
@@ -120,7 +121,7 @@ class Wikipedia:
                     path.append(self.titles[curr_link])
                     curr_link = parent_links[curr_link]
                 path.reverse()
-                print("Found shortest path " + str(path))
+                print(description + "shortest path found" + str(path))
                 return path
             
             for child_link in self.links[curr_link]:
@@ -129,7 +130,7 @@ class Wikipedia:
                     parent_links[child_link] = curr_link
                     link_queue.append(child_link)
 
-        print("No path is found!")
+        print(description + "no path is found!")
         return []
     
     # Finds the top k values in an array given array and k. Helper method
@@ -214,5 +215,11 @@ if __name__ == "__main__":
     wikipedia = Wikipedia(sys.argv[1], sys.argv[2])
     #wikipedia.find_longest_titles()
     #wikipedia.find_most_linked_pages()
-    #wikipedia.find_shortest_path("渋谷", "パレートの法則")
+    wikipedia.find_shortest_path("渋谷", "パレートの法則")
+    wikipedia.find_shortest_path("パレートの法則", "渋谷") # multiple shortest paths
+    wikipedia.find_shortest_path("C", "E") # simple path
+    wikipedia.find_shortest_path("A", "A") # self loop
+    wikipedia.find_shortest_path("孤立ノード", "孤立ノード") # self loop of isolated node
+    wikipedia.find_shortest_path("渋谷", "孤立ノード") # not reachable
+
     wikipedia.find_most_popular_pages()
