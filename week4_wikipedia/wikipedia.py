@@ -164,7 +164,7 @@ class Wikipedia:
             assert(math.isclose(sum(new_ranks.values()), sum(pageranks.values())))
 
             # 4. End distribution when difference is negligible
-            diff = sum((new_ranks[page_id] - pageranks[page_id] for page_id in self.titles) ** 2)
+            diff = sum((new_ranks[page_id] - pageranks[page_id])**2 for page_id in self.titles)
             pageranks = new_ranks
             if diff < 0.01: 
                 break
