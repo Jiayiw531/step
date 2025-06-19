@@ -11,7 +11,46 @@
 - Returns the top 10 most popular pages based on converged ranks.
 - Avoids full sort using a more efficient O(n) selection method.
 
+output for small: 
+> Loading from cache...kipedia.py' 'wikipedia_dataset/pages_small.txt' 'wikipedia_dataset/links_sFrom 渋谷 to パレートの法則, shortest path found['渋谷', 'C', 'パレートの法則']
+From パレートの法則 to 渋谷, shortest path found['パレートの法則', 'C', '渋谷']
+From C to E, shortest path found['C', 'E']
+From A to A, shortest path found['A']
+From 孤立ノード to 孤立ノード, shortest path found['孤立ノード']
+From 渋谷 to 孤立ノード, no path is found!
+Top 10 popular pages:
+E: 1.44793
+C: 1.42410
+D: 1.31766
+パレートの法則: 1.23445
+ループノード: 1.11888
+渋谷: 0.82786
+A: 0.46129
+孤立ノード: 0.16783
+
+output for medium: 
+> Loading from cache...
+From 渋谷 to パレートの法則, shortest path found['渋谷', 'マクドナルド', 'Twitter', 'パレートの法則']
+From パレートの法則 to 渋谷, shortest path found['パレートの法則', 'イタリア', 'クリスマス', '渋谷']
+From C to E, shortest path found['C', 'E']
+From A to A, shortest path found['A']
+Top 10 popular pages:
+英語: 1507.29770
+ISBN: 959.70713
+2006年: 526.10136
+2005年: 502.26093
+2007年: 491.48185
+東京都: 480.27395
+昭和: 459.37581
+2004年: 445.36975
+2003年: 404.73836
+2000年: 401.88955
+
+
+
 3. implement DFS with stack so that it traverses in the order of DFS with recursion
+
+
 
 ### notes from mentor: 
 
